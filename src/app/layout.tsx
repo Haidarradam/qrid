@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -59,8 +60,8 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   keywords: siteConfig.keywords,
-  authors: [{ name: "Haidar Radam", url: "https://sociabuzz.com/haidarradam" }],
-  creator: "Haidar Radam",
+  authors: [{ name: "Haidar Adam", url: "https://sociabuzz.com/haidarradam" }],
+  creator: "Haidar Adam",
   publisher: "QRID",
   applicationName: siteConfig.name,
   referrer: "origin-when-cross-origin",
@@ -148,7 +149,7 @@ const structuredData = [
     ],
     creator: {
       "@type": "Person",
-      name: "Haidar Radam",
+      name: "Haidar Adam",
       url: "https://sociabuzz.com/haidarradam",
     },
   },
