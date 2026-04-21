@@ -117,6 +117,9 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.webmanifest",
   category: "technology",
+  verification: {
+    google: "4W_7YAUIkpSWhinJGSCzwningyzELICPiMvOau8i4-s",
+    },
 };
 
 // JSON-LD Structured Data — membantu Google memahami ini adalah aplikasi web gratis
@@ -205,7 +208,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <head>
-        google-site-verification=4W_7YAUIkpSWhinJGSCzwningyzELICPiMvOau8i4-s
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
