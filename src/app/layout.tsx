@@ -205,6 +205,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <head>
+        google-site-verification=4W_7YAUIkpSWhinJGSCzwningyzELICPiMvOau8i4-s
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
