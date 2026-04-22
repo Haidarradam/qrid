@@ -16,7 +16,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 // ⚠️ Ganti URL ini dengan domain kamu setelah deploy
-const SITE_URL = "https://qrid.vercel.app";
+const SITE_URL = "https://qrid.online";
 
 const siteConfig = {
   name: "QRID",
