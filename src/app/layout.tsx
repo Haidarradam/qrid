@@ -119,8 +119,8 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   category: "technology",
   verification: {
-    google: "4W_7YAUIkpSWhinJGSCzwningyzELICPiMvOau8i4-s",
-    },
+  google: "jmj_LiRO3i0keOW5YKUuV1YYidcsdQ_4v4Rb5Dvht4Y",
+  },
 };
 
 // JSON-LD Structured Data — membantu Google memahami ini adalah aplikasi web gratis
