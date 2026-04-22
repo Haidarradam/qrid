@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { downloadAsPNG } from "../lib/qr";
+import { QRConfig, downloadAsPNG } from "../lib/qr";
 import { DownloadIcon } from "./Icons";
 
 interface DownloadButtonProps {
-  text: string;
+  config: QRConfig;
   disabled?: boolean;
 }
 
-export function DownloadButton({ text, disabled = false }: DownloadButtonProps) {
+export function DownloadButton({ config, disabled = false }: DownloadButtonProps) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -17,7 +17,7 @@ export function DownloadButton({ text, disabled = false }: DownloadButtonProps) 
     if (disabled || loading) return;
     setLoading(true);
     try {
-      await downloadAsPNG(text);
+      await downloadAsPNG(config);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 1800);
     } catch (err) {
@@ -43,7 +43,7 @@ export function DownloadButton({ text, disabled = false }: DownloadButtonProps) 
             {success ? "Downloaded" : loading ? "Preparing..." : "Download PNG"}
           </span>
           <span className="text-[10px] font-mono uppercase tracking-widest text-ink-300 group-disabled:text-ink-400">
-            1024 × 1024 · transparent-ready
+            1024 × 1024 {config.transparent ? "· transparent" : ""}
           </span>
         </span>
       </span>

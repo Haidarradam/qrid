@@ -4,11 +4,51 @@ import { useState } from "react";
 import { URLInput } from "./components/URLInput";
 import { QRPreview } from "./components/QRPreview";
 import { DownloadButton } from "./components/DownloadButton";
+import { ColorPicker } from "./components/ColorPicker";
+import { LogoUpload } from "./components/LogoUpload";
+import { PatternPicker } from "./components/PatternPicker";
+import { CornerPicker } from "./components/CornerPicker";
+import { BackgroundToggle } from "./components/BackgroundToggle";
+import { Accordion, AccordionItem } from "./components/Accordion";
 import { SparkleIcon } from "./components/Icons";
+import { DEFAULT_CONFIG, QRConfig } from "./lib/qr";
+
+type ConfigState = Omit<QRConfig, "text">;
 
 export default function Home() {
   const [input, setInput] = useState("");
+  const [config, setConfig] = useState<ConfigState>(DEFAULT_CONFIG);
+
   const hasContent = input.trim().length > 0;
+  const fullConfig: QRConfig = { ...config, text: input };
+
+  const isModified =
+    config.color !== DEFAULT_CONFIG.color ||
+    config.transparent !== DEFAULT_CONFIG.transparent ||
+    config.dotPattern !== DEFAULT_CONFIG.dotPattern ||
+    config.cornerStyle !== DEFAULT_CONFIG.cornerStyle ||
+    config.logo !== DEFAULT_CONFIG.logo;
+
+  const updateConfig = <K extends keyof ConfigState>(key: K, value: ConfigState[K]) => {
+    setConfig((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const resetAll = () => setConfig(DEFAULT_CONFIG);
+
+  // Pattern label map for accordion summary
+  const patternLabel: Record<string, string> = {
+    square: "Square",
+    rounded: "Rounded",
+    dots: "Dots",
+    classy: "Classy",
+    "classy-rounded": "Classy+",
+    "extra-rounded": "Extra rounded",
+  };
+  const cornerLabel: Record<string, string> = {
+    square: "Square",
+    dot: "Dot",
+    "extra-rounded": "Rounded",
+  };
 
   return (
     <main className="relative min-h-screen flex flex-col pt-16">
@@ -44,7 +84,7 @@ export default function Home() {
           </div>
           <div className="hidden sm:flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-ink-400">
             <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-            <span>v1.0</span>
+            <span>v2.0</span>
           </div>
         </div>
       </header>
@@ -62,8 +102,8 @@ export default function Home() {
             QR code.
           </h1>
           <p className="mt-6 max-w-xl text-base text-ink-500 leading-relaxed">
-            Paste a URL or any text, preview the QR instantly, and download it as a high-resolution
-            PNG image.
+            Paste a URL or any text, customize every detail, and download a high-resolution
+            PNG — ready for digital or print.
           </p>
         </div>
       </section>
@@ -72,24 +112,130 @@ export default function Home() {
       <section className="relative z-10 flex-1 px-6 lg:px-10 pb-20">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 items-start">
-            {/* Left: Input & Actions */}
+            {/* Left: Input & Customize */}
             <div className="lg:col-span-3 space-y-8">
               <URLInput value={input} onChange={setInput} />
 
+              {/* Customize accordion */}
               <div>
+                <div className="flex items-baseline justify-between mb-1">
+                  <h2 className="text-xs font-mono uppercase tracking-widest text-ink-400">
+                    Customize
+                  </h2>
+                  {isModified && (
+                    <button
+                      type="button"
+                      onClick={resetAll}
+                      className="text-xs font-mono uppercase tracking-widest text-ink-400 hover:text-ink-900 transition-colors"
+                    >
+                      Reset all
+                    </button>
+                  )}
+                </div>
+
+                <Accordion>
+                  {({ openAccordion, setOpenAccordion }) => (
+                    <>
+                      <AccordionItem
+                        id="color"
+                        label="QR Color"
+                        summary={config.color}
+                        openAccordion={openAccordion}
+                        setOpenAccordion={setOpenAccordion}
+                        badge={
+                          config.color !== DEFAULT_CONFIG.color ? (
+                            <span
+                              className="w-3 h-3 rounded-full border border-ink-200"
+                              style={{ backgroundColor: config.color }}
+                            />
+                          ) : null
+                        }
+                      >
+                        <ColorPicker
+                          value={config.color}
+                          onChange={(hex) => updateConfig("color", hex)}
+                        />
+                      </AccordionItem>
+
+                      <AccordionItem
+                        id="background"
+                        label="Background"
+                        summary={config.transparent ? "Transparent" : "Solid white"}
+                        openAccordion={openAccordion}
+                        setOpenAccordion={setOpenAccordion}
+                      >
+                        <BackgroundToggle
+                          transparent={config.transparent}
+                          onChange={(t) => updateConfig("transparent", t)}
+                        />
+                      </AccordionItem>
+
+                      <AccordionItem
+                        id="pattern"
+                        label="Dot Pattern"
+                        summary={patternLabel[config.dotPattern]}
+                        openAccordion={openAccordion}
+                        setOpenAccordion={setOpenAccordion}
+                      >
+                        <PatternPicker
+                          value={config.dotPattern}
+                          onChange={(p) => updateConfig("dotPattern", p)}
+                        />
+                      </AccordionItem>
+
+                      <AccordionItem
+                        id="corner"
+                        label="Corner Style"
+                        summary={cornerLabel[config.cornerStyle] || "Custom"}
+                        openAccordion={openAccordion}
+                        setOpenAccordion={setOpenAccordion}
+                      >
+                        <CornerPicker
+                          value={config.cornerStyle}
+                          onChange={(c) => updateConfig("cornerStyle", c)}
+                        />
+                      </AccordionItem>
+
+                      <AccordionItem
+                        id="logo"
+                        label="Logo"
+                        summary={config.logo ? "Attached" : "None"}
+                        openAccordion={openAccordion}
+                        setOpenAccordion={setOpenAccordion}
+                        badge={
+                          config.logo ? (
+                            <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                          ) : null
+                        }
+                      >
+                        <LogoUpload
+                          value={config.logo}
+                          onChange={(l) => updateConfig("logo", l)}
+                        />
+                      </AccordionItem>
+                    </>
+                  )}
+                </Accordion>
+              </div>
+
+              {/* Export */}
+              <div className="pt-8 border-t border-ink-200/60">
                 <div className="flex items-baseline justify-between mb-4">
                   <h2 className="text-xs font-mono uppercase tracking-widest text-ink-400">
                     Export
                   </h2>
                   <span className="text-xs font-mono text-ink-300">PNG</span>
                 </div>
-                <DownloadButton text={input} disabled={!hasContent} />
+                <DownloadButton config={fullConfig} disabled={!hasContent} />
               </div>
 
               {/* Meta info */}
               <div className="pt-8 border-t border-ink-200/60 space-y-3">
                 <MetaRow label="Format" value="PNG · 1024×1024" />
-                <MetaRow label="Error correction" value="Medium · 15%" />
+                <MetaRow
+                  label="Error correction"
+                  value={config.logo ? "High · 30%" : "Medium · 15%"}
+                />
                 <MetaRow
                   label="Characters"
                   value={`${input.length} / 2953`}
@@ -108,7 +254,7 @@ export default function Home() {
                   <span className="text-xs font-mono text-ink-400 animate-fade-in">live</span>
                 )}
               </div>
-              <QRPreview text={input} />
+              <QRPreview config={fullConfig} />
             </div>
           </div>
         </div>
@@ -131,28 +277,28 @@ export default function Home() {
             />
             <FeatureCard
               number="02"
+              title="Fully Customizable"
+              description="Colors, patterns, corner styles, transparent backgrounds, and your own logo — craft a QR code that matches your brand."
+            />
+            <FeatureCard
+              number="03"
               title="Privacy First"
               description="Your links never leave your browser. All QR code generation happens locally on your device — nothing is stored or tracked."
             />
             <FeatureCard
-              number="03"
+              number="04"
               title="High Resolution"
               description="Download crisp 1024×1024 PNG files ready for print or digital use — posters, flyers, business cards, menus, packaging, and more."
             />
             <FeatureCard
-              number="04"
+              number="05"
               title="Works Everywhere"
               description="Scannable with any modern smartphone camera. Compatible with iOS, Android, and all QR code reader apps — no special app required."
             />
             <FeatureCard
-              number="05"
+              number="06"
               title="Never Expires"
               description="QR codes generated here are static. They will keep working forever, as long as your destination link stays online."
-            />
-            <FeatureCard
-              number="06"
-              title="Instant Preview"
-              description="See your QR code update in real-time as you type. No waiting, no reloading — just paste a link and it's ready."
             />
           </div>
         </div>
@@ -175,8 +321,8 @@ export default function Home() {
             />
             <Step
               number="2"
-              title="Preview instantly"
-              description="Your QR code appears in real-time. Scan it with your phone to test before downloading."
+              title="Customize & preview"
+              description="Pick colors, patterns, and upload a logo. Your QR code updates in real-time as you tweak it."
             />
             <Step
               number="3"
@@ -202,12 +348,16 @@ export default function Home() {
               answer="Yes — 100% free forever. No signup, no watermark, no hidden fees, and no limits on how many QR codes you can generate."
             />
             <FAQItem
-              question="How do I convert a link to a QR code?"
-              answer="Just paste your URL into the input field. The QR code is generated in real-time, and you can download it as a high-resolution PNG with one click."
+              question="Can I customize the QR code design?"
+              answer="Absolutely. Change the color, swap the dot pattern (square, rounded, dots, and more), pick a corner style, toggle a transparent background, and even embed your own logo at the center."
+            />
+            <FAQItem
+              question="Will a custom logo make my QR code unscannable?"
+              answer="No. When you add a logo, QRID automatically upgrades the error correction to 30%, which keeps the code scannable even if part of it is covered."
             />
             <FAQItem
               question="Is my data safe when I use QRID?"
-              answer="Absolutely. All QR code generation happens directly in your browser. Your links and data are never sent to any server, stored, or tracked."
+              answer="Yes. All QR code generation happens directly in your browser. Your links, logos, and data are never sent to any server, stored, or tracked."
             />
             <FAQItem
               question="What resolution is the downloaded QR code?"
