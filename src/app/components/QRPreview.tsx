@@ -1,45 +1,61 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { generateQRDataURL } from "../lib/qr";
+import { useEffect, useRef, useState } from "react";
+import { QRConfig, renderQRToElement, updateInstance } from "../lib/qr";
 
 interface QRPreviewProps {
-  text: string;
+  config: QRConfig;
 }
 
-export function QRPreview({ text }: QRPreviewProps) {
-  const [dataUrl, setDataUrl] = useState<string>("");
+export function QRPreview({ config }: QRPreviewProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const instanceRef = useRef<any>(null);
   const [error, setError] = useState<string>("");
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
-    if (!text.trim()) {
-      setDataUrl("");
+    if (!config.text.trim()) {
+      setReady(false);
       setError("");
+      if (containerRef.current) containerRef.current.innerHTML = "";
+      instanceRef.current = null;
       return;
     }
 
-    generateQRDataURL(text, { size: 512 })
-      .then((url) => {
-        if (!cancelled) {
-          setDataUrl(url);
+    if (!containerRef.current) return;
+
+    // First time — create instance. After that — update it.
+    if (!instanceRef.current) {
+      renderQRToElement(containerRef.current, config, 512)
+        .then((inst) => {
+          if (cancelled) return;
+          instanceRef.current = inst;
+          setReady(true);
           setError("");
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setError(err?.message || "Failed to generate QR code");
-          setDataUrl("");
-        }
-      });
+        })
+        .catch((err) => {
+          if (!cancelled) {
+            setError(err?.message || "Failed to generate QR");
+          }
+        });
+    } else {
+      try {
+        updateInstance(instanceRef.current, config, 512);
+        setReady(true);
+        setError("");
+      } catch (err: any) {
+        setError(err?.message || "Failed to update QR");
+      }
+    }
 
     return () => {
       cancelled = true;
     };
-  }, [text]);
+  }, [config]);
 
-  if (!text.trim()) {
+  if (!config.text.trim()) {
     return <EmptyState />;
   }
 
@@ -51,15 +67,22 @@ export function QRPreview({ text }: QRPreviewProps) {
     );
   }
 
-  if (!dataUrl) {
-    return <LoadingState />;
-  }
-
   return (
     <div className="animate-scale-in">
-      <div className="relative aspect-square w-full bg-white rounded-sm overflow-hidden border border-ink-200">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={dataUrl} alt="QR Code" className="w-full h-full object-contain p-4" />
+      <div
+        className={`relative aspect-square w-full rounded-sm overflow-hidden border border-ink-200 ${
+          config.transparent ? "qr-checkerboard" : "bg-white"
+        }`}
+      >
+        <div
+          ref={containerRef}
+          className="w-full h-full flex items-center justify-center p-4 [&>canvas]:max-w-full [&>canvas]:max-h-full [&>canvas]:w-auto [&>canvas]:h-auto"
+        />
+        {!ready && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white/80">
+            <div className="w-6 h-6 border-2 border-ink-900 border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -83,14 +106,6 @@ function EmptyState() {
         </div>
       </div>
       <p className="text-sm text-ink-400 font-mono tracking-wide">awaiting input</p>
-    </div>
-  );
-}
-
-function LoadingState() {
-  return (
-    <div className="aspect-square w-full flex items-center justify-center border border-ink-200 bg-white rounded-sm">
-      <div className="w-6 h-6 border-2 border-ink-900 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 }
